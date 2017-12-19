@@ -1,19 +1,19 @@
 /**
  * Created by chris on 2/5/17.
  */
-public class Timer {
+class Timer {
 
 //    private int comparisons;
 //    private int moves;
     private long time;
 
-    public Timer(){
+    Timer(){
 //        comparisons = 0;
 //        moves = 0;
-        time = System.nanoTime();
+//        time = System.nanoTime();
     }
 
-    public void reset(){
+    void reset(){
 //        comparisons = 0;
 //        moves = 0;
         time = System.nanoTime();
@@ -47,7 +47,7 @@ public class Timer {
 //        return moves;
 //    }
 
-    public long getElapsedTime(){
-        return System.nanoTime()-time;
+    long getElapsedTime(){
+        return System.nanoTime() - time;
     }
 }

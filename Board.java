@@ -1,261 +1,223 @@
 import java.util.*;
 
-/**
- * Created by chris on 2/3/17.
+/***
+ * Board class.
+ *
+ * @author Chris Santos
+ * @version 2.0
+ * @since 2017-02-03
  */
-public class Board {
+public class Board{
 
     private static boolean DEBUG = false;
-    private static final int MAX_BOARD_SIZE = 9;
-    private static Scanner reader = new Scanner(System.in);
     private static Random random = new Random();
-    private static String state;
+    private static final int MAX_BOARD_SIZE = 9;
     public enum Action { LEFT, RIGHT, UP, DOWN }
-    private static Solver solver = new Solver();
-
+    private String state;
 
     // *************
     // INITIAL STATE
     // *************
 
-    /**
-     * inputPuzzle
-     *
-     * Allows user to input string version of puzzle.
-     */
-    public void inputPuzzle(){
 
-        System.out.print("Input tile order: ");
-        state = reader.next();
+    // *** SETTERS ***
+
+    /**
+     * set
+     *
+     * Set a user-defined board.
+     */
+    void set(String state){
+        this.state = state;
     }
 
 
     /**
-     * randomPuzzle
+     * setRandom
      *
-     * Generates random 8-tile puzzle.
+     * Generates a random board.
      */
-    public void randomPuzzle(){
-        Map<Integer, Integer> hmap = new HashMap<>();
-        Iterator hmapiterator;
-        Set hmapkeys;
-        int randompos;
-        int key;
-        int value;
-        //int position;
+    void setRandom(){
+        Map<Integer, Integer> tilemap = new HashMap<>(); // position and tile value map
+        Iterator positerator; // position iterator
+        Set positions; // set of positions
+        int randompos; // a random tile position
+        int key; // tile position
+        int value; // value at tile position
 
-        Stack<Integer> tileNumbers = new Stack<>();
+        // initialize stack to hold tiles
+        Stack<Integer> tileStack = new Stack<>();
+
         if(DEBUG) System.out.println("Generating puzzle.");
-        //create tiles 0-8, add to stack
-        //ensures no duplicate numbers
+
+        // create tiles 0-8, add to stack
+        // ensures no duplicate numbers
         for(int i = 0; i < MAX_BOARD_SIZE; i++){
-            tileNumbers.push(i);
+            //add tiles to stack
+            tileStack.push(i);
+
             if(DEBUG) System.out.println("Pushing value '" + i + "' to stack.");
         }
-        //while there are tiles to place, fill puzzle board
-        while(!tileNumbers.isEmpty()) {
+
+        // empty the tile stack to the board
+        while(!tileStack.isEmpty()) {
             randompos = random.nextInt(MAX_BOARD_SIZE);
-            if (!hmap.containsKey(randompos)) {
-                int tilevalue = tileNumbers.pop();
-                hmap.put(randompos, tilevalue);
+            if (!tilemap.containsKey(randompos)) {
+                int tilevalue = tileStack.pop();
+                tilemap.put(randompos, tilevalue);
+
                 if(DEBUG) System.out.println("Assigning value '" + tilevalue + "' to position " + randompos + "");
             }
         }
-        hmapkeys = hmap.keySet();
-        hmapiterator = hmapkeys.iterator();
-        StringBuilder idbuilder = new StringBuilder();
-        while (hmapiterator.hasNext()) {
-            key = (Integer)hmapiterator.next();
-            value = hmap.get(key);
-            idbuilder.append(value);
+
+        //initialize set of positions (keys)
+        positions = tilemap.keySet();
+
+        //enable iteration of positions
+        positerator = positions.iterator();
+
+        // create a board (string)
+        StringBuilder statebuilder = new StringBuilder();
+
+        // get tile value at each position and place into 'statebuilder'
+        while (positerator.hasNext()) {
+            key = (Integer)positerator.next();
+            value = tilemap.get(key);
+            statebuilder.append(value);
         }
-        state = idbuilder.toString();
+
+        // convert board state to string
+        state = statebuilder.toString();
+
         if(DEBUG) System.out.println("Finished generating.");
     }
 
 
-    /**
-     * getState
+    // *** GETTERS ***
+
+
+    /***
+     * Get a string representation of the board's state.
      *
-     * @return state - string format
+     * @return Board's state in string format
      */
-    public String getState(){ return state; }
+    String getState(){ return state; }
 
 
-    // ****************
-    // TRANSITION MODEL
-    // ****************
-
-    /**
-     * getMoves
+    /***
+     * Return all possible moves of the board's state.
      *
-     * Return all possible moves of the current state.
-     *
-     * @param current
-     * @return
+     * @return List of the board's possible moves
      */
-    public List<Board.Action> getMoves(Node current){
+    List<Action> getMoves(){
 
-        List<Board.Action> actions = new ArrayList<>();
+        List<Action> actions = new ArrayList<>();
 
-        if(DEBUG) System.out.print("Current state: " + current.getPosition() + "\n" +
+        if(DEBUG) System.out.print("Current state: " + getPosition() + "\n" +
                 "Moves: ");
 
-        //add available horizontal moves based on location
-        switch(current.getPosition()){
+        // add available horizontal moves based on location
+        switch(getPosition()){
             case 0:
             case 3:
             case 6:
-                actions.add(Board.Action.RIGHT);
+                actions.add(Action.RIGHT);
                 if(DEBUG) System.out.print("RIGHT ");
                 break;
             case 1:
             case 4:
             case 7:
-                actions.add(Board.Action.RIGHT);
+                actions.add(Action.RIGHT);
                 if(DEBUG) System.out.print("RIGHT ");
-                actions.add(Board.Action.LEFT);
+                actions.add(Action.LEFT);
                 if(DEBUG) System.out.print("LEFT ");
                 break;
             case 2:
             case 5:
             case 8:
-                actions.add(Board.Action.LEFT);
+                actions.add(Action.LEFT);
                 if(DEBUG) System.out.print("LEFT ");
                 break;
         }
 
-        //add available vertical moves based on location
-        switch(current.getPosition()){
+        // add available vertical moves based on location
+        switch(getPosition()){
             case 0:
             case 1:
             case 2:
-                actions.add(Board.Action.DOWN);
+                actions.add(Action.DOWN);
                 if(DEBUG) System.out.print("DOWN ");
                 break;
             case 3:
             case 4:
             case 5:
-                actions.add(Board.Action.DOWN);
+                actions.add(Action.DOWN);
                 if(DEBUG) System.out.print("DOWN ");
-                actions.add(Board.Action.UP);
+                actions.add(Action.UP);
                 if(DEBUG) System.out.print("UP ");
                 break;
             case 6:
             case 7:
             case 8:
-                actions.add(Board.Action.UP);
+                actions.add(Action.UP);
                 if(DEBUG) System.out.print("UP ");
                 break;
         }
+
         if(DEBUG) System.out.println();
+
         return actions;
     }
 
 
-    /**
-     * getDest
+    /***
+     * Get the position of the blank tile.
      *
-     * Returns position destination of blank tile.
-     *
-     * @param position
-     * @param action
-     * @return
+     * @return The blank tile's position.
      */
-    public int getDest(int position, Action action){
-        int dest = 0;
-
-        switch(action){
-            case LEFT:
-                dest = position-1;
-                break;
-            case RIGHT:
-                dest = position+1;
-                break;
-            case UP:
-                dest = position-3;
-                break;
-            case DOWN:
-                dest = position+3;
-                break;
-        }
-        return dest;
-    }
-
-
-    /**
-     * findPosition
-     *
-     * Returns position of blank tile.
-     */
-    public int findPosition(String state){
+    private int getPosition(){
         return state.indexOf('0');
     }
 
 
-    /**
-     * swapPosition
+    /***
+     * Get the blank tile's possible destination.
      *
-     * Trades blank tile position with destination position, gives new state (string).
-     *
-     * @param dest
-     * @param state
-     * @return New state - string
+     * @param action Direction of possible blank tile destination.
+     * @return destination
      */
-    public String swapPosition(int dest, String state){
-        char temp;
-        String pstate;
+    int getDestination(Action action){
+        int position = getPosition();
+        int destination = 0;
 
-        temp = state.charAt(dest);
-
-        pstate = state;
-        pstate = pstate.replace(temp, '_');
-        pstate = pstate.replace('0', temp);
-        pstate = pstate.replace('_', '0');
-
-        return pstate;
+        switch(action){
+            case LEFT:
+                destination = position - 1;
+                break;
+            case RIGHT:
+                destination = position + 1;
+                break;
+            case UP:
+                destination = position - 3;
+                break;
+            case DOWN:
+                destination = position + 3;
+                break;
+        }
+        return destination;
     }
 
 
-    // *********
-    // GOAL TEST
-    // *********
-
-    /**
-     * isGoal
-     *
-     * Determines if current state is the goal state.
-     *
-     * @return Whether or not current state is goal state.
+    /***
+     * Displays the current state of the board.
      */
-    public boolean isGoal(String state){
-        return solver.countMisplaced(state) == 0;
-    }
-
-
-    // *********
-    // PATH COST
-    // *********
-
-    /**
-     * getStepCost
-     *
-     * Gives cost of action, given a position and action from that position.
-     *
-     * @param state
-     * @param action
-     * @return
-     */
-    public int getStepCost(String state, Action action){
-        String newstate = "";
-
-        int dest = getDest(findPosition(state), action);
-        newstate = swapPosition(dest, state);
-
-        if(solver.getHeuristic() == 1) {
-            return solver.countMisplaced(newstate);
-        }else{
-            return solver.sumGoalDistance(newstate);
+    public void print(){
+        for(int i = 0; i < 3; i++) {
+            for(int j = 0; j < 3; j++) {
+                System.out.print(state.charAt((3 * i) + j) + " ");
+            }
+            System.out.println();
         }
     }
+
 }
